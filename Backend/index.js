@@ -32,7 +32,7 @@ mongoose
   //register
   app.post('/register', async (req, res) => {
     try {
-      const { name, email, password, role } = req.body;
+      const { name, email, password, linkedinProfile, role, skills, careerGoals } = req.body;
   
       // Check if user already exists
       let user = await Users.findOne({ email });
@@ -42,11 +42,22 @@ mongoose
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
   
-      // Create a new user
-      user = new Users({ name, email, password: hashedPassword, role });
+      // Create a new user with all fields
+      user = new Users({
+        name,
+        email,
+        password: hashedPassword,
+        linkedinProfile,
+        role: role || 'user', // Default to 'user' if role is not provided
+        skills: skills || [], // Default to empty array if skills are not provided
+        careerGoals: careerGoals || [], // Default to empty array if careerGoals are not provided
+      });
+  
+      // Save the user to the database
       await user.save();
   
-      res.status(201).json({ msg: 'User registered successfully' });
+      // Respond with success message
+      res.status(201).json({ msg: 'User registered successfully', user });
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
